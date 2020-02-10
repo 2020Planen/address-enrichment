@@ -6,15 +6,19 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import org.acme.Message;
+import org.acme.jsonObjectMapper.Message; 
+
 import org.acme.restclient.AddressData;
 import org.acme.restclient.AddressService;
 import org.apache.camel.ProducerTemplate;
@@ -41,29 +45,36 @@ public class EntryConsumer {
     @Inject
     ProducerTemplate camelProducer;
 
-    @Incoming("entry") //TODO ændre tilbage til address-enrichment
+    @Incoming("address-enrichment")
     //@Outgoing("routing")
     public void enrich(String content) throws IOException, InterruptedException, ExecutionException, TimeoutException {
 
-        Gson gson = new Gson();
-       
+        Gson gson = new Gson(); 
+ 
         Message msg = gson.fromJson(content, Message.class);
         msg.startLog("address-enrichment");
-        String address = msg.getMetaData().getAddress();
-
-        StringBuilder queryParams = new StringBuilder("?");
-
-        appendQueryParam("q", address, queryParams);
-
-        appendQueryParam("struktur", "flad", queryParams);
-        String addressData = getHttpData((url + queryParams).replace(" ", "%20"));
-
-        System.out.println(addressData);
-
-        JsonObject jo = new JsonParser().parse(addressData).getAsJsonArray().get(0).getAsJsonObject();
-        AddressData ad = gson.fromJson(jo, AddressData.class);
-
-        System.out.println(ad.toString());
+//        String address = msg.getMetaData().getAddress();
+//
+//        StringBuilder queryParams = new StringBuilder("?");
+//
+//        appendQueryParam("q", address, queryParams);
+//
+//        appendQueryParam("struktur", "flad", queryParams);
+//        String addressData = getHttpData((url + queryParams).replace(" ", "%20"));
+//
+//        System.out.println(addressData);
+//
+//        JsonObject jo = new JsonParser().parse(addressData).getAsJsonArray().get(0).getAsJsonObject();
+//        AddressData ad = gson.fromJson(jo, AddressData.class);
+//
+//        System.out.println(ad.toString());  
+//        
+        msg.endLog();
+        try {
+            msg.sendToKafkaQue();
+        } catch (Exception ex) {
+            Logger.getLogger(EntryConsumer.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 
