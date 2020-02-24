@@ -63,7 +63,7 @@ public class EntryConsumer {
         
         //Replace whitespaces with "%20" to make the fetch call URL format
         String urlFormatted = (url + queryParams).replace(" ", "%20");
-        System.out.println("\n\nFetching from url: " +urlFormatted +" ........."); 
+        System.out.println("\n\nFetching from url: " +urlFormatted +" .........\n"); 
         String addressData = getHttpData(urlFormatted);
 
         JsonArray ja = new JsonParser().parse(addressData).getAsJsonArray();
